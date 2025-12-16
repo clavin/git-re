@@ -6,6 +6,8 @@ from typing import Optional, overload
 from lib.args import Args
 from lib.log import Log
 
+STASH_NAME = "git-re--stash"
+
 
 class Git:
     """
@@ -72,7 +74,7 @@ class Git:
         prompting the user to manually edit the todo list. This leaves the
         rebase in a state where the specified commit is ready to be amended.
         """
-        seq_editor = f"sed -i '' -e \"\s/^pick /edit /\""
+        seq_editor = f"sed -i '' -e \"\\s/^pick /edit /\""
 
         return self._run_git(
             [
@@ -105,7 +107,7 @@ class Git:
 
     def has_staged(self) -> Result:
         """
-        Returns True if there are staged files in the git repository.
+        Returns SUCCESS if there are staged files in the git repository.
         """
         return self._run_git(["diff", "--cached", "--quiet"], expect_exitcode=1)
 
@@ -114,7 +116,7 @@ class Git:
         Stashes the currently staged files.
         """
         return self._run_git(
-            ["stash", "push", "--keep-index", "-m", "git-re--stash"],
+            ["stash", "push", "--keep-index", "-m", STASH_NAME],
             expect_exitcode=0,
         )
 
@@ -127,10 +129,9 @@ class Git:
             expect_exitcode=0,
         )
 
-    def stash_id(self) -> Optional[str]:
+    def stash_list(self) -> Optional[str]:
         """
-        Returns the stash ID of the entry created by git-re. If no such entry
-        exists, returns None.
+        Returns the stash list as a string. In dry-run mode, returns None.
         """
         result = self._run_git(
             ["stash", "list"],
@@ -139,11 +140,7 @@ class Git:
         if result is None:
             return None
 
-        for line in result.stdout.splitlines():
-            if "git-re--stash" in line:
-                return line.split(":", 1)[0]
-
-        return None
+        return result.stdout
 
     def drop_stash(self, stash_id: str) -> Result:
         """
@@ -164,6 +161,20 @@ class Git:
         )
 
 
+def _stash_id(git: Git) -> Optional[str]:
+    """
+    Returns the stash ID of the entry created by git-re. If no such entry
+    exists, returns None.
+    """
+    list = git.stash_list()
+    if list is None:
+        return None
+
+    for line in list.splitlines():
+        if STASH_NAME in line:
+            return line.split(":", 1)[0]
+
+
 def cleanup_stash(git: Git, log: Log) -> None:
     """
     Cleans up any leftover stash entry created by git-re.
@@ -171,7 +182,7 @@ def cleanup_stash(git: Git, log: Log) -> None:
     This function is declared separately from the Git class because it wraps
     multiple Git commands.
     """
-    stash_id = git.stash_id()
+    stash_id = _stash_id(git)
     if stash_id is not None:
         log.debug("Removing leftover stash entry...")
         if git.drop_stash(stash_id) == Git.Result.FAILED:
