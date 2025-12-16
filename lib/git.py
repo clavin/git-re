@@ -3,8 +3,8 @@ import subprocess
 import shlex
 from typing import Optional, overload
 
-from args import Args
-from log import Log
+from lib.args import Args
+from lib.log import Log
 
 
 class Git:

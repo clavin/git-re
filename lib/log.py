@@ -1,5 +1,6 @@
-from args import Args
 import sys
+
+from lib.args import Args
 
 
 class Log:
