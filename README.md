@@ -1,8 +1,8 @@
-<center>
+<p align="center">
 <img src="git-re.svg" width="256" height="256" align="center" alt="git-re" />
 
 ***git*** script for ***re***vising commits
-</center>
+</p>
 
 `git-re` is a command-line tool that simplifies the process of editing a past Git commit. It automates "***r***ebase-***e***diting" a commit, simplifying the workflow to one or two commands.
 
