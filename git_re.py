@@ -91,6 +91,7 @@ def _abort_flow(log: Log, git: Git) -> int:
     """
     Aborts the current rebase operation.
     """
+    # Abort the rebase
     if git.abort_rebase() == Git.Result.FAILED:
         log.error("Error: Failed to abort rebase.")
         return 1
