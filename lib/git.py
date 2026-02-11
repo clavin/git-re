@@ -60,11 +60,16 @@ class Git:
         )
 
         if expect_exitcode is not None:
-            return (
-                Git.Result.SUCCESS
-                if result.returncode == expect_exitcode
-                else Git.Result.FAILED
-            )
+            if result.returncode == expect_exitcode:
+                return Git.Result.SUCCESS
+
+            self.log.debug(f"Command exited with code {result.returncode} (expected {expect_exitcode})")
+            if result.stdout.strip():
+                self.log.debug(f"stdout: {result.stdout.strip()}")
+            if result.stderr.strip():
+                self.log.debug(f"stderr: {result.stderr.strip()}")
+
+            return Git.Result.FAILED
 
         return result
 
