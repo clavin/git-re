@@ -79,7 +79,7 @@ class Git:
         prompting the user to manually edit the todo list. This leaves the
         rebase in a state where the specified commit is ready to be amended.
         """
-        seq_editor = f"sed -i '' -e \"\\s/^pick /edit /\""
+        seq_editor = f"sed -i '' -e \"1s/^pick /edit /\""
 
         return self._run_git(
             [
@@ -121,7 +121,7 @@ class Git:
         Stashes the currently staged files.
         """
         return self._run_git(
-            ["stash", "push", "--keep-index", "-m", STASH_NAME],
+            ["stash", "push", "--staged", "-m", STASH_NAME],
             expect_exitcode=0,
         )
 
@@ -130,7 +130,7 @@ class Git:
         Pops the most recent stash.
         """
         return self._run_git(
-            ["stash", "pop"],
+            ["stash", "pop", "--index"],
             expect_exitcode=0,
         )
 
